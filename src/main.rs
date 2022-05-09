@@ -7,9 +7,16 @@ fn main() {
             brightness: 1.0 / 5.0f32,
         })
         .add_plugins(DefaultPlugins)
+        .add_startup_system(set_window)
         .add_startup_system(setup)
         .add_system(animate_light_direction)
         .run();
+}
+
+fn set_window(mut windows: ResMut<Windows>) {
+    let window = windows.get_primary_mut().unwrap();
+    println!("Window size was: {},{}", window.width(), window.height());
+    window.set_resolution(500.0, 500.0);
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
