@@ -1,52 +1,52 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
-
-fn add_people(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Elaina Proctor".to_string()));
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Renzo Hume".to_string()));
-    commands
-        .spawn()
-        .insert(Person)
-        .insert(Name("Zayna Nieves".to_string()));
-}
-
-// Resource
-struct GreetTimer(Timer);
-
-fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
-    // update our timer with the time elapsed since the last update
-    // if that caused the timer to finish, we say hello to everyone
-    if timer.0.tick(time.delta()).just_finished() {
-        for name in query.iter() {
-            println!("hello {}!", name.0);
-        }
-    }
-}
-
-pub struct HelloPlugin;
-
-impl Plugin for HelloPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(GreetTimer(Timer::from_seconds(2.0, true)))
-            .add_startup_system(add_people)
-            .add_system(greet_people);
-    }
-}
-
 fn main() {
     App::new()
+        .insert_resource(AmbientLight {
+            color: Color::WHITE,
+            brightness: 1.0 / 5.0f32,
+        })
         .add_plugins(DefaultPlugins)
-        .add_plugin(HelloPlugin)
+        .add_startup_system(setup)
+        .add_system(animate_light_direction)
         .run();
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_scene(asset_server.load("models/digger_v3.glb#Scene0"));
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+        ..default()
+    });
+    const HALF_SIZE: f32 = 1.0;
+    commands.spawn_bundle(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            shadow_projection: OrthographicProjection {
+                left: -HALF_SIZE,
+                right: HALF_SIZE,
+                bottom: -HALF_SIZE,
+                top: HALF_SIZE,
+                near: -10.0 * HALF_SIZE,
+                far: 10.0 * HALF_SIZE,
+                ..default()
+            },
+            shadows_enabled: true,
+            ..default()
+        },
+        ..default()
+    });
+}
+
+fn animate_light_direction(
+    time: Res<Time>,
+    mut query: Query<&mut Transform, With<DirectionalLight>>,
+) {
+    for mut transform in query.iter_mut() {
+        transform.rotation = Quat::from_euler(
+            EulerRot::ZYX,
+            0.0,
+            time.seconds_since_startup() as f32 * std::f32::consts::TAU / 10.0,
+            -std::f32::consts::FRAC_PI_4,
+        );
+    }
 }
