@@ -17,6 +17,8 @@ use bevy::{
     },
 };
 
+mod pan_orbit_camera;
+
 fn main() {
     App::new()
         .insert_resource(AmbientLight {
@@ -26,9 +28,11 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(MaterialPlugin::<CustomMaterial>::default())
         .add_startup_system(set_window)
+        .add_startup_system(pan_orbit_camera::spawn_camera)
         .add_startup_system(setup_model_lights)
         .add_startup_system(setup_custom_vertex_material)
         .add_system(animate_light_direction)
+        .add_system(pan_orbit_camera::pan_orbit_camera)
         .run();
 }
 
@@ -40,10 +44,6 @@ fn set_window(mut windows: ResMut<Windows>) {
 
 fn setup_model_lights(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_scene(asset_server.load("models/digger_v3.glb#Scene0"));
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
     const HALF_SIZE: f32 = 1.0;
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
