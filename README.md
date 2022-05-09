@@ -4,6 +4,12 @@ Delving into a little rust via the motivation of learning it, webGPU and wasm, p
 ## setup
 https://bevyengine.org/learn/book/getting-started/setup/#rust-setup
 
+## run
 ```shell
-cargo run
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli
+cargo build --release --target wasm32-unknown-unknown
+wasm-bindgen --out-name hello_rust --out-dir target --target web target/wasm32-unknown-unknown/release/hello_rust.wasm
+cargo install basic-http-server
+basic-http-server .
 ```
