@@ -37,17 +37,17 @@ fn setup_custom_vertex_material(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
-    let mut mesh = Mesh::from(shape::Cube { size: 2.0 });
+    let mut mesh = Mesh::from(shape::Cube { size: 1. });
     mesh.insert_attribute(
         ATTRIBUTE_BLEND_COLOR,
         // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
-        vec![[1.0, 1.0, 0.0, 1.0]; 24],
+        vec![[0.1, 0.6, 0.1, 1.0]; 24],
     );
 
     // cube
     commands.spawn().insert_bundle(MaterialMeshBundle {
         mesh: meshes.add(mesh),
-        transform: Transform::from_xyz(0., 0., 0.),
+        transform: Transform::from_xyz(0., 0., 0.).with_scale(Vec3::new(10., 0.1, 10.)),
         material: materials.add(CustomMaterial {
             color: Color::WHITE,
         }),
