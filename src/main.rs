@@ -4,12 +4,14 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
+        mesh::{MeshVertexAttribute, MeshVertexBufferLayout},
         render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{
             std140::{AsStd140, Std140},
             BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
             BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, Buffer,
-            BufferBindingType, BufferInitDescriptor, BufferSize, BufferUsages, ShaderStages,
+            BufferBindingType, BufferInitDescriptor, BufferSize, BufferUsages,
+            RenderPipelineDescriptor, ShaderStages, SpecializedMeshPipelineError, VertexFormat,
         },
         renderer::RenderDevice,
     },
@@ -25,7 +27,7 @@ fn main() {
         .add_plugin(MaterialPlugin::<CustomMaterial>::default())
         .add_startup_system(set_window)
         .add_startup_system(setup_model_lights)
-        .add_startup_system(setup_custom_material)
+        .add_startup_system(setup_custom_vertex_material)
         .add_system(animate_light_direction)
         .run();
 }
@@ -61,17 +63,29 @@ fn setup_model_lights(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn setup_custom_material(
+// A "high" random id should be used for custom attributes to ensure consistent sorting and avoid collisions with other attributes.
+// See the MeshVertexAttribute docs for more info.
+const ATTRIBUTE_BLEND_COLOR: MeshVertexAttribute =
+    MeshVertexAttribute::new("BlendColor", 988540917, VertexFormat::Float32x4);
+
+fn setup_custom_vertex_material(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<CustomMaterial>>,
 ) {
+    let mut mesh = Mesh::from(shape::Cube { size: 2.0 });
+    mesh.insert_attribute(
+        ATTRIBUTE_BLEND_COLOR,
+        // The cube mesh has 24 vertices (6 faces, 4 vertices per face), so we insert one BlendColor for each
+        vec![[1.0, 1.0, 0.0, 1.0]; 24],
+    );
+
     // cube
     commands.spawn().insert_bundle(MaterialMeshBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 2.0 })),
+        mesh: meshes.add(mesh),
         transform: Transform::from_xyz(0., 0., 0.),
         material: materials.add(CustomMaterial {
-            color: Color::GREEN,
+            color: Color::WHITE,
         }),
         ..default()
     });
@@ -144,14 +158,11 @@ impl Material for CustomMaterial {
     // If you don't define one of them it will use the default mesh shader which can be found at
     // <https://github.com/bevyengine/bevy/blob/latest/crates/bevy_pbr/src/render/mesh.wgsl>
 
-    // For this example we don't need a vertex shader
-    // fn vertex_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-    //     // Use the same path as the fragment shader since wgsl let's you define both shader in the same file
-    //     Some(asset_server.load("shaders/custom_material.wgsl"))
-    // }
-
+    fn vertex_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
+        Some(asset_server.load("shaders/custom_vertex_attribute.wgsl"))
+    }
     fn fragment_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        Some(asset_server.load("shaders/custom_material.wgsl"))
+        Some(asset_server.load("shaders/custom_vertex_attribute.wgsl"))
     }
 
     fn bind_group(render_asset: &<Self as RenderAsset>::PreparedAsset) -> &BindGroup {
@@ -172,5 +183,18 @@ impl Material for CustomMaterial {
             }],
             label: None,
         })
+    }
+
+    fn specialize(
+        _pipeline: &MaterialPipeline<Self>,
+        descriptor: &mut RenderPipelineDescriptor,
+        layout: &MeshVertexBufferLayout,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        let vertex_layout = layout.get_layout(&[
+            Mesh::ATTRIBUTE_POSITION.at_shader_location(0),
+            ATTRIBUTE_BLEND_COLOR.at_shader_location(1),
+        ])?;
+        descriptor.vertex.buffers = vec![vertex_layout];
+        Ok(())
     }
 }
