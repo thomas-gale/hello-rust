@@ -1,5 +1,5 @@
 # hello-rust
-Delving into a little rust via the motivation of learning it, webGPU and wasm, planning on using https://bevyengine.org/
+Delving into rust via the motivation of learning more about wasm, webgpu and wgsl using https://bevyengine.org/
 
 ## setup
 
@@ -14,6 +14,10 @@ cargo install basic-http-server
 ## run debug locally
 ```shell
 cargo run
+```
+(optional fast builds)
+```shell
+cargo run --features bevy/dynamic
 ```
 
 ## run debug wasm
