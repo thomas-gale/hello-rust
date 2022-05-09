@@ -1,12 +1,21 @@
-// https://bevy-cheatbook.github.io/cookbook/pan-orbit-camera.html
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
 };
 
+/// Attribution: https://bevy-cheatbook.github.io/cookbook/pan-orbit-camera.html
+pub struct CameraPlugin;
+
+impl Plugin for CameraPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(spawn_camera)
+            .add_system(pan_orbit_camera);
+    }
+}
+
 /// Tags an entity as capable of panning and orbiting.
 #[derive(Component)]
-pub struct PanOrbitCamera {
+struct PanOrbitCamera {
     /// The "focus point" to orbit around. It is automatically updated when panning the camera
     pub focus: Vec3,
     pub radius: f32,
@@ -24,7 +33,7 @@ impl Default for PanOrbitCamera {
 }
 
 /// Pan the camera with middle mouse click, zoom with scroll wheel, orbit with right mouse click.
-pub fn pan_orbit_camera(
+fn pan_orbit_camera(
     windows: Res<Windows>,
     mut ev_motion: EventReader<MouseMotion>,
     mut ev_scroll: EventReader<MouseWheel>,
@@ -118,8 +127,8 @@ fn get_primary_window_size(windows: &Res<Windows>) -> Vec2 {
 }
 
 /// Spawn a camera like this
-pub fn spawn_camera(mut commands: Commands) {
-    let translation = Vec3::new(-2.0, 2.5, 5.0);
+fn spawn_camera(mut commands: Commands) {
+    let translation = Vec3::new(5., 5., 5.);
     let radius = translation.length();
 
     commands
