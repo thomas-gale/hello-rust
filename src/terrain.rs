@@ -1,11 +1,11 @@
-use bevy::{
-    prelude::*,
-};
+use bevy::prelude::*;
 
 mod basic_vertex_material;
 use basic_vertex_material::BasicVertexMaterial;
 mod setup_basic_vertex_material;
 use setup_basic_vertex_material::setup_basic_vertex_material;
+mod generate;
+use generate::calculate;
 
 /// Morphed from https://github.com/bevyengine/bevy/blob/v0.7.0/examples/shader/custom_vertex_attribute.rs starting point.
 pub struct TerrainPlugin;
@@ -13,7 +13,8 @@ pub struct TerrainPlugin;
 impl Plugin for TerrainPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(MaterialPlugin::<BasicVertexMaterial>::default())
-            .add_startup_system(setup_basic_vertex_material);
+            .add_startup_system(setup_basic_vertex_material)
+            .add_system(calculate);
     }
 }
 
