@@ -33,5 +33,5 @@ pub fn setup_basic_vertex_material(
             }),
             ..default()
         })
-        .insert(Name::new("terrain"));
+        .insert(Name::new("basic vertex material"));
 }
