@@ -14,5 +14,5 @@ pub fn spawn_digger(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn_scene(digger_gltf);
         })
         .insert(Name::new("player_digger"))
-        .insert(Digger { speed: 2. });
+        .insert(Digger { speed: 5. });
 }
