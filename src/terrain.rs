@@ -45,14 +45,17 @@ fn setup_custom_vertex_material(
     );
 
     // cube
-    commands.spawn().insert_bundle(MaterialMeshBundle {
-        mesh: meshes.add(mesh),
-        transform: Transform::from_xyz(0., 0., 0.).with_scale(Vec3::new(10., 0.1, 10.)),
-        material: materials.add(CustomMaterial {
-            color: Color::WHITE,
-        }),
-        ..default()
-    });
+    commands
+        .spawn()
+        .insert_bundle(MaterialMeshBundle {
+            mesh: meshes.add(mesh),
+            transform: Transform::from_xyz(0., 0., 0.).with_scale(Vec3::new(10., 0.1, 10.)),
+            material: materials.add(CustomMaterial {
+                color: Color::WHITE,
+            }),
+            ..default()
+        })
+        .insert(Name::new("terrain"));
 }
 
 #[derive(Debug, Clone, TypeUuid)]

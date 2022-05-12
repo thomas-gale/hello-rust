@@ -139,5 +139,6 @@ fn spawn_camera(mut commands: Commands) {
         .insert(PanOrbitCamera {
             radius,
             ..Default::default()
-        });
+        })
+        .insert(Name::new("camera"));
 }
