@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::player::Digger;
+use super::Digger;
 
 pub fn spawn_digger(mut commands: Commands, asset_server: Res<AssetServer>) {
     let digger_gltf = asset_server.load("models/digger_v3.glb#Scene0");
@@ -14,5 +14,5 @@ pub fn spawn_digger(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn_scene(digger_gltf);
         })
         .insert(Name::new("player_digger"))
-        .insert(Digger {});
+        .insert(Digger { speed: 2. });
 }
